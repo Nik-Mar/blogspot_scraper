@@ -5,8 +5,8 @@ from Blogspot.items import BlogspotItem
 
 class BlogspotSpider(scrapy.Spider):
     name = 'blogspotspider'
-    allowed_domains = ['blogspot.com']
-    start_urls = ["https://kathleenkirkpoetry.blogspot.com/"] #whatever url 
+    #allowed_domains = ['blogspot.com']
+    start_urls = ["https://howtoplanwriteanddevelopabook.blogspot.com/"] #whatever url 
     file_name=start_urls[0].split('/')[2].split(".")[0] #unelegant but it works
       
     custom_settings = {
@@ -21,7 +21,8 @@ class BlogspotSpider(scrapy.Spider):
             
             single_post["title"]=post.css('h3.post-title.entry-title a::text').get()
             single_post["date"]=post.css('h2.date-header span::text').get()
-            single_post["text"]=post.css('div.date-outer div[itemprop*="articleBody"] *::text').extract()
+            #single_post["text"]=post.css('div.date-outer div[itemprop*="articleBody"] *::text').extract()
+            single_post["text"]=post.css('div.date-outer div.post-body.entry-content *::text').extract()
 
             yield single_post
 
