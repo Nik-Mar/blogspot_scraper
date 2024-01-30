@@ -1,0 +1,3 @@
+I didn't introduce the broken blogs to the code since they throw different errors.
+Instead of tokenizing the blog text I took the length of the texts after getting rid of special characters. We can also try tokenizing the blog text.
+I did post processing on the csv such as adding word count totals
