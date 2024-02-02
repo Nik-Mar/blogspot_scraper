@@ -6,7 +6,7 @@ from Blogspot.items import BlogspotItem
 class BlogspotSpider(scrapy.Spider):
     name = 'blogspotspider'
     #allowed_domains = ['blogspot.com']
-    start_urls = ["https://howtoplanwriteanddevelopabook.blogspot.com/"] #whatever url 
+    start_urls = ["http://iheartcookingclubs.blogspot.com/"] #whatever url 
     file_name=start_urls[0].split('/')[2].split(".")[0] #unelegant but it works
       
     custom_settings = {
@@ -30,4 +30,3 @@ class BlogspotSpider(scrapy.Spider):
         if next_page is not None:
            yield response.follow(next_page, callback=self.parse)
         time.sleep(0.2) #pause so we don't get blocked
-

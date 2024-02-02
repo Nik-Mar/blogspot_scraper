@@ -41,7 +41,7 @@ def process_file(file_path):
 
 # Iterate over all JSON files
 blogs={}
-folder_path = 'json_files'
+folder_path = r'C:\Users\marja\Documents\Python Scripts\Blogspot\Blogspot\new'
 for filename in os.listdir(folder_path):
     if filename.endswith('.json'):
         print(filename)
