@@ -41,7 +41,7 @@ def process_file(file_path):
 
 # Iterate over all JSON files
 blogs={}
-folder_path = r'C:\Users\marja\Documents\Python Scripts\Blogspot\token_size_chart\broken_blogs'
+folder_path = "...."
 for filename in os.listdir(folder_path):
     if filename.endswith('.json'):
         print(filename)
@@ -50,12 +50,12 @@ for filename in os.listdir(folder_path):
         #blog, year_word_counts = filename, process_file(os.path.join(file_path))
         blogs[filename] = year_word_counts
 
-# # Dictionary to a data frame
-# df = pd.DataFrame(blogs)
+# Dictionary to a data frame
+df = pd.DataFrame(blogs)
 
-# # Write df to CSV
-# csv_file_path = 'word_counts.csv'
-# df.to_csv(csv_file_path)
+# Write df to CSV
+csv_file_path = 'word_counts.csv'
+df.to_csv(csv_file_path)
 
 # # Step 6: Create the Chart
 # plt.figure(figsize=(15, 8))
