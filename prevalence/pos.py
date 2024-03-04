@@ -9,98 +9,184 @@ import spacy
 import time
 import pandas as pd
 nlp = spacy.load("en_core_web_sm")
+from spacy.pipeline.ner import EntityRecognizer
+import unicodedata
+import numpy as np
+from nltk.tokenize import RegexpTokenizer
+from collections import Counter
+from nltk import FreqDist
+import itertools
+import re
+import os
+from nltk.corpus import wordnet
+from collections import defaultdict
+
 
 #Download NLTK resources
-nltk.download('words')
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('wordnet')
+# nltk.download('words')
+# nltk.download('punkt')
+# nltk.download('stopwords')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('wordnet')
 
-def preprocess_text_with_word_count(text):
-    # Apply SpaCy NLP pipeline
-    doc = nlp(text)
-    
-    # Extract named entities
-    named_entities = [(ent.text, ent.label_) for ent in doc.ents]
-    
-    # Remove punctuation
-    text = text.translate(str.maketrans("", "", string.punctuation))
-    
-    # Tokenization
-    tokens = word_tokenize(text)
-    
-    # Remove non-English words
-    english_words = set(nltk.corpus.words.words())
-    tokens = [token for token in tokens if token.lower() in english_words]
-    
-    # Remove stopwords
-    stop_words = set(stopwords.words('english'))
-    tokens = [token for token in tokens if token not in stop_words]
-    
-    # Lemmatization
+
+def get_wordnet_pos(pos_tag):
+    if pos_tag.startswith('J'):
+        return wordnet.ADJ
+    elif pos_tag.startswith('V'):
+        return wordnet.VERB
+    elif pos_tag.startswith('N'):
+        return wordnet.NOUN
+    elif pos_tag.startswith('R'):
+        return wordnet.ADV
+    elif  pos_tag.startswith('M'):
+        return wordnet.VERB   
+    elif  pos_tag.startswith('I'):
+        return wordnet.ADV
+    else:
+        return None  # Default to noun if no specific POS tag is found
+
+def lemmatize_pos_tokens(pos_tokens):
     lemmatizer = WordNetLemmatizer()
-    tokens = [lemmatizer.lemmatize(token) for token in tokens]
+    lemmatized_tokens = []
+
+    for token, pos_tag in pos_tokens:
+        pos = get_wordnet_pos(pos_tag)
+        if pos is None:# not supply tag in case of None
+            lemma = lemmatizer.lemmatize(token) #unknown word?
+        else:
+            lemma = lemmatizer.lemmatize(token, pos=pos)     
+        lemmatized_tokens.append(lemma)
+
+    return lemmatized_tokens
+
+
+def preprocess(text):
+
+    # preprocessing before NER
     
-    # Part-of-speech tagging
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8')
+    text = re.sub(r'\d', '', text)
+    text=re.sub(r"([!()\[\]])", r" \1 ", text)
+
+    document = nlp(text)
+
+    # recognize named entities
+    entities = [(ent.text, ent.label_) for ent in document.ents if ent.label_ not in ["DATE", "TIME", "QUANTITY"]]
+
+    #text without entities
+    text_without_ne = [token.text for token in document if token.ent_type_ not in ['GPE', 'PERSON', 'ORDINAL', 'CARDINAL', 'ORG', 'LOC', 'FAC', 'NORP', 'EVENT', 'LAW', 'WORK_OF_ART', 'NER', 'PRODUCT']]
+    text=(" ".join(text_without_ne))
+
+    tokenizer = RegexpTokenizer(r'\w+')
+    tokens = tokenizer.tokenize(text)
+
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token.lower() not in stop_words] #stop words
+    tokens= [token for token in tokens if len(token) > 1] #one character tokens
+    
+    #removing cardinals becaue NER doesn't always recognize them
+    cardinal_strings = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"]
+    tokens = [token for token in tokens if token.lower() not in cardinal_strings]
+
     pos_tags = pos_tag(tokens)
-    
-    # Include named entities in the word count
-    word_count = {}
-    for word, pos in pos_tags:        if word not in word_count:
-            word_count[word] = {pos: 1}
-        else:
-            if pos not in word_count[word]:
-                word_count[word][pos] = 1
-            else:
-                word_count[word][pos] += 1
-    
-    # Include named entities in the word count with their respective labels
-    for entity, label in named_entities:
-        if entity not in word_count:
-            word_count[entity] = {'NE_' + label: 1}
-        else:
-            if 'NE_' + label not in word_count[entity]:
-                word_count[entity]['NE_' + label] = 1
-            else:
-                word_count[entity]['NE_' + label] += 1
-    
-    return word_count
+
+    wntags = [(word.lower(), get_wordnet_pos(pos)) for word, pos in pos_tags]
+
+    lemmatized_tokens = lemmatize_pos_tokens(pos_tags)
+    lemmatized_tokens = [token.lower() for token in lemmatized_tokens]
+
+    return entities, lemmatized_tokens, wntags
+
+
+def combine_entries_by_year(path):
+    with open(path, 'r', encoding='utf-8') as file:
+            content = json.load(file)
+            entries_by_year = defaultdict(list)
+            for entry in range(len(content)):
+                date_= content[entry]['date']
+                text = content[entry].get('text')
+                if text  is not None:
+                        if isinstance(text, list):
+                            entry_text = ' '.join(text)
+                        try:
+                            # Attempt to parse the date
+                            year = pd.to_datetime(date_).year
+                        except ValueError:
+                            # skip unknown date posts
+                            pass
+                        if year is not None:
+                            entries_by_year[year].append(text)
+                        
+            combined_entries = {}
+            for year, text_list in entries_by_year.items():
+                combined_entries[year] = ' '.join(text_list)
+
+    return combined_entries           
 
 
 
-file="whatever_file"
 
-start_time = time.time()
-with open(file, 'r', encoding='utf-8') as file:
-        content = json.load(file)
-        year_word_counts = {}
-        for entry in range(len(content)):
-            entry_date = content[entry]['date']
-            entry_text = content[entry].get('text') # Using .get() to avoid KeyError if 'text' does not exist
-            if entry_text  is not None:
-                    if isinstance(entry_text, list):
-                        entry_text = ' '.join(entry_text)
-                    try:
-                        # Attempt to parse the date
-                        year = pd.to_datetime(entry_date).year
-                    except ValueError:
-                        # skip unknown date posts
-                         pass
-                    #tokenizing, pos, lemm
-                    word_count = preprocess_text_with_word_count(entry_text)
-                    #print(word_count)
-                    # Aggregate word counts by year
-                    if year in year_word_counts:
-                        year_word_counts[year].update(word_count)
-                    else:
-                        year_word_counts[year] = word_count
-                    
-    
-df = pd.DataFrame(year_word_counts)
-csv_file_path = "yourpath"
-df.to_csv(csv_file_path)
-end_time = time.time()
-elapsed_time = end_time - start_time
-print(f"Execution Time: {elapsed_time:.4f} seconds")
-print(df.head())
+# file=
+# combined_entries_by_year = combine_entries_by_year(file)
+
+# result=[]
+# for year, combined_text in combined_entries_by_year.items():
+#     text=preprocess(combined_text)
+#     entities=text[0]
+#     lemmas=text[1]
+#     tags=text[2]
+#     result.append({'year': year, 'entities': entities, 'lemmas': lemmas, 'pos': tags})
+
+# start_time = time.time()
+# output_file_path =
+# with open(output_file_path, 'w') as output_file:
+#     json.dump(result, output_file, indent=2)
+# end_time = time.time()
+# elapsed_time = end_time - start_time
+# print(f"Execution Time: {elapsed_time:.2f} seconds")
+
+folder_path=r"C:\Users\marja\Documents\Python_Scripts\Blogspot\scraped_blogs"
+
+def set_default(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
+
+
+for filename in os.listdir(folder_path):
+        if filename.endswith('.json'):
+            print(filename)
+            file_path = os.path.join(folder_path, filename)
+            combined_entries_by_year = combine_entries_by_year(file_path)
+
+            result=[]
+            for year, combined_text in combined_entries_by_year.items():
+                text=preprocess(combined_text)
+                entities=text[0]
+                lemmas=text[1]
+                tags=text[2]
+                result.append({'year': year, 'entities': entities, 'lemmas': lemmas, 'pos': tags})
+            
+            output_folder_path=r"C:\Users\marja\Documents\Python_Scripts\Blogspot\processed_blogs"
+            file_path = os.path.join(output_folder_path, filename)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(result, f, default=set_default)
+
+
+
+
+
+                    # # Aggregate word counts by year
+                    # if year in year_word_counts:
+                    #     year_word_counts[year].update(word_count)
+                    # else:
+                    #     year_word_counts[year] = word_count
+
+# df = pd.DataFrame(year_word_counts)
+# csv_file_path = r"C:\Users\marja\Documents\Python_Scripts\Blogspot\crpgaddict_data.csv"
+# df.to_csv(csv_file_path)
+# end_time = time.time()
+# elapsed_time = end_time - start_time
+# print(f"Execution Time: {elapsed_time:.4f} seconds")
+
