@@ -29,7 +29,6 @@ from collections import defaultdict
 # nltk.download('averaged_perceptron_tagger')
 # nltk.download('wordnet')
 
-
 def get_wordnet_pos(pos_tag):
     if pos_tag.startswith('J'):
         return wordnet.ADJ
@@ -106,9 +105,9 @@ def combine_entries_by_year(path):
             for entry in range(len(content)):
                 date_= content[entry]['date']
                 text = content[entry].get('text')
-                if text  is not None:
+                if text and date_ is not None:
                         if isinstance(text, list):
-                            entry_text = ' '.join(text)
+                            text = ' '.join(text)
                         try:
                             # Attempt to parse the date
                             year = pd.to_datetime(date_).year
@@ -125,68 +124,85 @@ def combine_entries_by_year(path):
     return combined_entries           
 
 
-
-
-# file=
-# combined_entries_by_year = combine_entries_by_year(file)
-
-# result=[]
-# for year, combined_text in combined_entries_by_year.items():
-#     text=preprocess(combined_text)
-#     entities=text[0]
-#     lemmas=text[1]
-#     tags=text[2]
-#     result.append({'year': year, 'entities': entities, 'lemmas': lemmas, 'pos': tags})
-
-# start_time = time.time()
-# output_file_path =
-# with open(output_file_path, 'w') as output_file:
-#     json.dump(result, output_file, indent=2)
-# end_time = time.time()
-# elapsed_time = end_time - start_time
-# print(f"Execution Time: {elapsed_time:.2f} seconds")
-
-folder_path=r"C:\Users\marja\Documents\Python_Scripts\Blogspot\scraped_blogs"
-
 def set_default(obj):
     if isinstance(obj, set):
         return list(obj)
     raise TypeError
 
 
-for filename in os.listdir(folder_path):
-        if filename.endswith('.json'):
-            print(filename)
-            file_path = os.path.join(folder_path, filename)
-            combined_entries_by_year = combine_entries_by_year(file_path)
+def final_preprocess_blogs(folder_path):
+    start_time = time.time()
+    for filename in os.listdir(folder_path):
+            if filename.endswith('.json'):
+                print(filename)
+                file_path = os.path.join(folder_path, filename)
+                combined_entries_by_year = combine_entries_by_year(file_path)
 
-            result=[]
-            for year, combined_text in combined_entries_by_year.items():
-                text=preprocess(combined_text)
-                entities=text[0]
-                lemmas=text[1]
-                tags=text[2]
-                result.append({'year': year, 'entities': entities, 'lemmas': lemmas, 'pos': tags})
-            
-            output_folder_path=r"C:\Users\marja\Documents\Python_Scripts\Blogspot\processed_blogs"
-            file_path = os.path.join(output_folder_path, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, default=set_default)
+                result=[]
+                for year, combined_text in combined_entries_by_year.items():
+                    text=preprocess(combined_text)
+                    entities=text[0]
+                    lemmas=text[1]
+                    tags=text[2]
+                    result.append({'year': year, 'entities': entities, 'lemmas': lemmas, 'pos': tags})
+
+                output_folder_path="processed_blogs"
+                file_path = os.path.join(output_folder_path, filename)
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(result, f, default=set_default)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Execution Time: {elapsed_time:.2f} seconds")
+
+
+#nlp.max_length = 1800000
+#folder_path='scraped_blogs'
+#final_preprocess_blogs(folder_path)
 
 
 
 
 
-                    # # Aggregate word counts by year
-                    # if year in year_word_counts:
-                    #     year_word_counts[year].update(word_count)
-                    # else:
-                    #     year_word_counts[year] = word_count
+def find_low_freq_lemma(folder_path):
+    """
+    Here we find the lemmas occur at most twice in a year and create a json file
+    which includes a nested dictionary of year-lemma-count data
+    """
+    # The dictionary maps years to dictionaries, which map lemmas to their counts
+    lemmas_frequency_per_year = defaultdict(lambda: defaultdict(int))
 
-# df = pd.DataFrame(year_word_counts)
-# csv_file_path = r"C:\Users\marja\Documents\Python_Scripts\Blogspot\crpgaddict_data.csv"
-# df.to_csv(csv_file_path)
-# end_time = time.time()
-# elapsed_time = end_time - start_time
-# print(f"Execution Time: {elapsed_time:.4f} seconds")
+    def lemma_counter(folder_path):
+        try:
+            for filename in os.listdir(folder_path):
+                if filename.endswith('.json'):
+                    print(filename)
+                    file_path = os.path.join(folder_path, filename)
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    # Increment the count for each lemma in the respective year
+                    for record in data:
+                        year = record['year']
+                        for lemma in record['lemmas']:
+                            lemmas_frequency_per_year[year][lemma] += 1
+        except FileNotFoundError:
+            print(f"File not found.")
 
+
+    lemma_counter(folder_path)
+
+    # Keep only lemmas that occur at most twice in each year
+    filtered_lemmas_per_year = {}
+    for year, lemmas in lemmas_frequency_per_year.items():
+        filtered_lemmas = {lemma: count for lemma, count in lemmas.items() if count <= 2}
+        filtered_lemmas_per_year[year] = filtered_lemmas
+
+    # Dump the low freq lemmas into a JSON file
+    output_folder="low_freq_lemmas.json"
+    with open(output_folder, 'w', encoding='utf-8') as f:
+        json.dump(filtered_lemmas_per_year, f, default=set_default)
+
+
+
+folder_path = 'processed_blogs'
+find_low_freq_lemma(folder_path)
