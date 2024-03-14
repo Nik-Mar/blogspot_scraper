@@ -162,8 +162,6 @@ def final_preprocess_blogs(folder_path):
 
 
 
-
-
 def find_low_freq_lemma(folder_path):
     """
     Here we find the lemmas occur at most twice in a year and create a json file
@@ -204,5 +202,102 @@ def find_low_freq_lemma(folder_path):
 
 
 
-folder_path = 'processed_blogs'
-find_low_freq_lemma(folder_path)
+#folder_path = 'processed_blogs'
+#find_low_freq_lemma(folder_path)
+
+
+
+def create_master_set(_data):
+    """
+    Create the set of all lemmas in the corpus
+    """
+    master_set = set()
+    for words in _data:
+        master_set.update(words)
+    return master_set
+
+
+def create_master_set(data):
+    master_set = set()
+    for words in data:
+        master_set.update(words.split())
+    return master_set
+
+
+def count_occurrences(_loaded_data, year):
+    """
+    Prevalence calculation
+    """
+    filtered_data = []
+
+    # Adjusting to the new structure
+    for filename, years_data in _loaded_data.items():
+        text = years_data.get(str(year))
+        if text:
+            filtered_data.append(text)
+
+    # Creating master set of a given year
+    master_set_of_year = create_master_set(filtered_data)
+
+    # Calculating prevalence
+    prevalence_map = dict()
+    author_count = len(filtered_data)
+    print(f"In {year} there were {author_count} blog authors and {len(master_set_of_year)} unique lemmas.")
+
+    word_counts = Counter(" ".join(filtered_data).split())
+
+    for word in master_set_of_year:
+        prevalence = word_counts[word] / author_count
+        prevalence_map[word] = prevalence
+
+    print("Prevalence calculation done")
+
+    # Saving the result in a file for the year
+    results_directory = "results"
+    os.makedirs(results_directory, exist_ok=True)  # Ensure the directory exists
+    result_file = f"{year}.json"
+    file_path = os.path.join(results_directory, result_file)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(prevalence_map, f, default=set_default)
+
+    return prevalence_map
+
+
+def combine_preprocessed_lemmas(directory_path):
+    combined_entries = defaultdict(lambda: defaultdict(list))
+    # Iterate through each file in the directory
+    for filename in os.listdir(directory_path):
+        if filename.endswith('.json'):
+            file_path = os.path.join(directory_path, filename)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = json.load(file)
+                for entry in content:
+                    year = entry.get('year')
+                    lemmas = entry.get('lemmas')
+                    if lemmas and year:
+                        # Join lemmas if it's a list
+                        if isinstance(lemmas, list):
+                            lemmas = ' '.join(lemmas)
+                        # Append the lemmas to the list for the corresponding year and filename
+                        combined_entries[filename][year].append(lemmas)
+
+    # For each filename and year, join all lemmas into a single string
+    for filename in combined_entries:
+        for year in combined_entries[filename]:
+            combined_entries[filename][year] = ' '.join(combined_entries[filename][year])
+
+    return dict(combined_entries)
+
+
+directory_path = 'processed_blogs'
+combined = combine_preprocessed_lemmas(directory_path)
+output_folder = "combined.json"
+with open(output_folder, 'w', encoding='utf-8') as f:
+    json.dump(combined, f)
+
+
+with open('combined.json', 'r', encoding='utf-8') as f:
+    loaded_data = json.load(f)
+
+for year in range(2004, 2025):
+    count_occurrences(loaded_data, year)
