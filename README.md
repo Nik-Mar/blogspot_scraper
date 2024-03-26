@@ -1,5 +1,5 @@
 # Data Science Project
-## blogspot_scraping
+## [Blogspot Scraping Process]
 
 ### Libraries needed
 * Scrapy
@@ -15,7 +15,7 @@ After installation and downloading the project, run the scraper like this:
 
 * if the file is empty or any of the fields title, text, date, the website most likely has a different structure and css selectors would have to be updated. At the moment the css selectors work for these basic blogspot sites with similar structure
 
-## token_size_per_blog
+## [Token size per blog]
 
 ### Libraries needed
 * pandas
@@ -31,7 +31,13 @@ The output of token_size.py is the csv file named word_counts.csv
 
 Note: The content of "json_files" folder is the same as "scraped_blogs" folder in prevalence_pipeline
 
-### prevalence_pipeline
+## [Prevalence pipeline]
+
+
+
+There are text pre-processing, prevalence calculation and prevalence results comparison steps.
+
+#### 1) [Text pre-processing]
 
 ### Libraries needed
 * nltk
@@ -47,9 +53,6 @@ Note: The content of "json_files" folder is the same as "scraped_blogs" folder i
 * itertools
 * re
 * os
-
-There are text pre-processing, prevalence calculation and prevalence results comparison steps.
-#### 1) Text pre-processing
 process_text.py utilizes English language model from spaCy for NLP tasks
 
 Pre-processing includes:
@@ -64,8 +67,18 @@ entities: Named entities recognized in the text, except dates, quantities, and t
 lemmas: Lemmatized forms of the words in the text
 pos: POS tags of the words in the text
 
-#### 2) prevalence calculation
-To use this script, you should have a directory named 'processed_blogs' with JSON files
+#### 2) [Prevalence calculation]
+
+### Libraries needed
+* string
+* json 
+* pandas 
+* collections 
+* itertools
+* re
+* os
+  
+To use prevalence.py, you should have a directory named 'processed_blogs' with JSON files
 
 Custom Library Functions: It imports custom functions from a lib module, which contains the following:
 
@@ -79,17 +92,44 @@ Steps:
 
 2- Count how many blogs mention each word
 
-3- Calculate the total number of blogs that year
+3- Calculate the total number of blogs which were active that year
 
 4- Calculate the prevalence of each word
 
+One can validate prevalence results of specific year-lemma combination using testing_results function.
 
 Output:
 lemma-prevalence values are dumped to 21 JSON files correspoding years from 2004 to 2024.
 
     
-#### 3) prevalence comparison [link text itself]
-To use this script, you should have a directory named 'results' with JSON files
+#### 3) [Prevalence comparison]
+
+### Libraries needed
+* json
+* pandas 
+
+To use this script, you should have a directory named 'results' with JSON files.
+
+It merges the project output prevalence values into the  Brysbart's prevalence data (Pknown value) by as a left join. 
+
+Output:
+An .xlsx file which contains Brysbart's set of words, Pknown value and our prevalence values for corresponding word. Each column represents the year.
+
+### [Prevalence visualization]
+
+### Libraries needed
+* matplotlib
+* json
+* os
+ 
+prevalence_viz.py returns a bar chart showing the word prevalences in a specific year in descending order, and a line chart of prevalence values of a selected word over years. 
+There are example line charts in example_visualizations folder.
 
 
-[link text itself]: http://www.reddit.com
+[Text pre-processing]: [http://www.reddit.com](https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/process_text.py)https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/process_text.py]
+[Prevalence calculation]: [https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/prevalence.py]
+[Prevalence comparison]: [https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/comparison.py]
+[Prevalence visualization]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/prevalence_pipeline/prevalence_visualization]
+[Blogspot Scraping Process]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/Blogspot_scraping]
+[Token size per blog]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/token_size_per_blog]
+[Prevalence pipeline]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/prevalence_pipeline]
