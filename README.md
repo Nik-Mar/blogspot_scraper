@@ -24,9 +24,13 @@ After installation and downloading the project, run the scraper like this:
 * json
 
 token_size.py process JSON files containing blog entries, aggregates word counts by year. Then, it writes the results to a CSV file.
+
 The JSON files processed here are raw blog data, the output of blogspot_scraping.
+
 The output of token_size.py is the csv file named word_counts.csv
+
 Note: The content of "json_files" folder is the same as "scraped_blogs" folder in prevalence_pipeline
+
 ### prevalence_pipeline
 
 ### Libraries needed
@@ -47,6 +51,7 @@ Note: The content of "json_files" folder is the same as "scraped_blogs" folder i
 There are text pre-processing, prevalence calculation and prevalence results comparison steps.
 #### 1) Text pre-processing
 process_text.py utilizes English language model from spaCy for NLP tasks
+
 Pre-processing includes:
 * Removing non-ASCII characters
 * Filtering out numbers and punctuation
@@ -63,10 +68,11 @@ pos: POS tags of the words in the text
 To use this script, you should have a directory named 'processed_blogs' with JSON files
 
 Custom Library Functions: It imports custom functions from a lib module, which contains the following:
-set_default: Handles JSON serialization
-combine_preprocessed_lemmas : Combines lemmatized words in 'processed_blogs'
-test_results : Function for validating results manually.
-prepare_data (prep): Processes the output from combine_preprocessed_lemmas and returns "blog_name", "year" and "word(lemma)" in a dataframe
+
+* set_default: Handles JSON serialization
+* combine_preprocessed_lemmas : Combines lemmatized words in 'processed_blogs'
+* test_results : Function for validating results manually.
+* prepare_data (prep): Processes the output from combine_preprocessed_lemmas and returns "blog_name", "year" and "word(lemma)" in a dataframe
 
 Steps:
 1- Drop duplicates to ensure each word is counted once per blog
