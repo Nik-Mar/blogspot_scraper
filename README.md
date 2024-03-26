@@ -26,7 +26,7 @@ After installation and downloading the project, run the scraper like this:
 token_size.py process JSON files containing blog entries, aggregates word counts by year. Then, it writes the results to a CSV file.
 The JSON files processed here are raw blog data, the output of blogspot_scraping.
 The output of token_size.py is the csv file named word_counts.csv
-
+Note: The content of "json_files" folder is the same as "scraped_blogs" folder in prevalence_pipeline
 ### prevalence_pipeline
 
 ### Libraries needed
@@ -70,9 +70,13 @@ prepare_data (prep): Processes the output from combine_preprocessed_lemmas and r
 
 Steps:
 1- Drop duplicates to ensure each word is counted once per blog
+
 2- Count how many blogs mention each word
+
 3- Calculate the total number of blogs that year
+
 4- Calculate the prevalence of each word
+
 
 Output:
 lemma-prevalence values are dumped to 21 JSON files correspoding years from 2004 to 2024.
