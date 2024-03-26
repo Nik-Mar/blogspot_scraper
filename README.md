@@ -88,8 +88,8 @@ Output:
 lemma-prevalence values are dumped to 21 JSON files correspoding years from 2004 to 2024.
 
     
-#### 3) prevalence comparison
+#### 3) prevalence comparison [link text itself]
 To use this script, you should have a directory named 'results' with JSON files
 
 
-
+[link text itself]: http://www.reddit.com
