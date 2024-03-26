@@ -17,7 +17,7 @@ After installation and downloading the project, run the scraper like this:
 
 ## [Token size per blog]
 
-### Libraries needed
+#### Libraries needed
 * pandas
 * os
 * re
@@ -39,7 +39,7 @@ There are text pre-processing, prevalence calculation and prevalence results com
 
 #### 1) [Text pre-processing]
 
-### Libraries needed
+#### Libraries needed
 * nltk
 * string
 * json
@@ -69,7 +69,7 @@ pos: POS tags of the words in the text
 
 #### 2) [Prevalence calculation]
 
-### Libraries needed
+#### Libraries needed
 * string
 * json 
 * pandas 
@@ -104,7 +104,7 @@ lemma-prevalence values are dumped to 21 JSON files correspoding years from 2004
     
 #### 3) [Prevalence comparison]
 
-### Libraries needed
+#### Libraries needed
 * json
 * pandas 
 
@@ -117,7 +117,7 @@ An .xlsx file which contains Brysbart's set of words, Pknown value and our preva
 
 ### [Prevalence visualization]
 
-### Libraries needed
+#### Libraries needed
 * matplotlib
 * json
 * os
@@ -126,10 +126,10 @@ prevalence_viz.py returns a bar chart showing the word prevalences in a specific
 There are example line charts in example_visualizations folder.
 
 
-[Text pre-processing]: [http://www.reddit.com](https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/process_text.py)https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/process_text.py]
-[Prevalence calculation]: [https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/prevalence.py]
-[Prevalence comparison]: [https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/comparison.py]
-[Prevalence visualization]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/prevalence_pipeline/prevalence_visualization]
-[Blogspot Scraping Process]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/Blogspot_scraping]
-[Token size per blog]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/token_size_per_blog]
-[Prevalence pipeline]: [https://github.com/Nik-Mar/blogspot_scraper/tree/main/prevalence_pipeline]
+[Text pre-processing]: http://www.reddit.com](https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/process_text.py)https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/process_text.py
+[Prevalence calculation]: https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/prevalence.py
+[Prevalence comparison]: https://github.com/Nik-Mar/blogspot_scraper/blob/main/prevalence_pipeline/comparison.py
+[Prevalence visualization]: https://github.com/Nik-Mar/blogspot_scraper/tree/main/prevalence_pipeline/prevalence_visualization
+[Blogspot Scraping Process]: https://github.com/Nik-Mar/blogspot_scraper/tree/main/Blogspot_scraping
+[Token size per blog]: https://github.com/Nik-Mar/blogspot_scraper/tree/main/token_size_per_blog
+[Prevalence pipeline]: https://github.com/Nik-Mar/blogspot_scraper/tree/main/prevalence_pipeline
